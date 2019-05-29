@@ -1,0 +1,14 @@
+name: XJCraftPlot
+version: 1.0.0
+main: org.xjcraft.plot.Plot
+authors: 
+  - Cat73
+  - Nami
+depends: 
+  - Bukkit-Boot
+commands:
+  plot:
+    usage: /<command> help
+permissions:
+  plot.admin:
+    default: op
