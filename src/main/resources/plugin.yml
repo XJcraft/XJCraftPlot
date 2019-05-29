@@ -1,13 +1,13 @@
 name: XJCraftPlot
 version: 1.0.0
-main: org.xjcraft.plot.Plot
+main: org.xjcraft.plot.PlotPlugin
 authors: 
   - Cat73
   - Nami
 depends: 
   - Bukkit-Boot
 commands:
-  plot:
+  plotplugin:
     usage: /<command> help
 permissions:
   plot.admin:
