@@ -33,6 +33,7 @@ public class PlotPlugin extends JavaPlugin {
 
     @Override
     public void onLoad() {
+        this.saveDefaultConfig();
         this.initDatabase();
     }
 
@@ -106,6 +107,34 @@ public class PlotPlugin extends JavaPlugin {
     public void transaction(Consumer<SqlSession> code) {
         this.transaction(sqlSession -> {
             code.accept(sqlSession);
+            return null;
+        });
+    }
+
+    /**
+     * 执行一个事务
+     * @param clazz 使用的 Mapper 的类型
+     * @param code 事务代码
+     * @param <T> Mapper 的类型
+     * @param <R> 返回值的类型
+     * @return 事务代码的返回值
+     */
+    public <T, R> R transaction(Class<? extends T> clazz, Function<T, R> code) {
+        return this.transaction(sqlSession -> {
+            T mapper = sqlSession.getMapper(clazz);
+            return code.apply(mapper);
+        });
+    }
+
+    /**
+     * 执行一个事务
+     * @param clazz 使用的 Mapper 的类型
+     * @param code 事务代码
+     * @param <T> Mapper 的类型
+     */
+    public <T> void transaction(Class<? extends T> clazz, Consumer<T> code) {
+        this.transaction(clazz, mapper -> {
+            code.accept(mapper);
             return null;
         });
     }
