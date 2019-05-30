@@ -16,6 +16,7 @@ import org.cat73.bukkitboot.annotation.core.BukkitBootPlugin;
 import org.cat73.bukkitboot.util.Lang;
 import org.cat73.bukkitboot.util.Strings;
 import org.cat73.bukkitboot.util.reflect.Scans;
+import org.xjcraft.plot.common.exception.RollbackException;
 import org.xjcraft.plot.util.Streams;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -121,6 +122,9 @@ public class XJPlot extends JavaPlugin {
         try {
             result = code.apply(sqlSession);
             sqlSession.commit();
+        } catch (RollbackException e) {
+            sqlSession.rollback();
+            return null;
         } catch (Exception e) {
             sqlSession.rollback();
             throw Lang.wrapThrow(e);

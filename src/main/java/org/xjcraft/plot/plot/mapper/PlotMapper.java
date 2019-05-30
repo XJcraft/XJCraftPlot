@@ -3,6 +3,7 @@ package org.xjcraft.plot.plot.mapper;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 import org.xjcraft.plot.common.mapper.CommonMapper;
 import org.xjcraft.plot.plot.entity.Plot;
 
@@ -10,7 +11,7 @@ import org.xjcraft.plot.plot.entity.Plot;
  * 地块的 Mapper 接口
  */
 public interface PlotMapper extends CommonMapper {
-    String INSERT_FIELDS = "world_name, x1, z1, x2, z2, addtime";
+    String INSERT_FIELDS = "id, world_name, x1, z1, x2, z2, addtime";
     String SELECT_FIELDS = "id, world_name AS worldName, x1, z1, x2, z2, addtime";
     String TABLE_NAME = "xjplot_plot";
 
@@ -21,11 +22,11 @@ public interface PlotMapper extends CommonMapper {
      */
     @Select({
             "SELECT",
-            SELECT_FIELDS,
+              SELECT_FIELDS,
             "FROM " + TABLE_NAME,
             "WHERE id = #{id}"
     })
-    Plot getById(@Param("id") Integer id);
+    Plot getById(@Param("id") int id);
 
     /**
      * 插入一条新记录
@@ -35,9 +36,16 @@ public interface PlotMapper extends CommonMapper {
             "INSERT INTO ",
               TABLE_NAME, "(",
                 INSERT_FIELDS,
-              ") VALUES (#{plot.worldName}, #{plot.x1}, #{plot.z1}, #{plot.x2}, #{plot.z2}, #{plot.addtime})",
+              ") VALUES (#{plot.id}, #{plot.worldName}, #{plot.x1}, #{plot.z1}, #{plot.x2}, #{plot.z2}, #{plot.addtime})",
     })
     void save(@Param("plot") Plot plot);
+
+    @Update({
+            "DELETE FROM",
+              TABLE_NAME,
+            "WHERE id = #{id}"
+    })
+    void removeById(@Param("id") int id);
 
     /**
      * 校验是否存在重叠的地块
