@@ -5,7 +5,7 @@ import org.bukkit.entity.Player;
 import org.cat73.bukkitboot.annotation.command.Command;
 import org.cat73.bukkitboot.annotation.core.Bean;
 import org.cat73.bukkitboot.annotation.core.Inject;
-import org.xjcraft.plot.PlotPlugin;
+import org.xjcraft.plot.XJPlot;
 import org.xjcraft.plot.plot.entity.Plot;
 import org.xjcraft.plot.plot.mapper.PlotMapper;
 import java.time.LocalDateTime;
@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @Bean
 public class PlotCommand {
     @Inject
-    private PlotPlugin plotPlugin;
+    private XJPlot plugin;
 
     /**
      * 创建一个新地块
@@ -27,7 +27,7 @@ public class PlotCommand {
      * @param z2 第二个角落的纵坐标
      */
     @Command(
-            permission = "plot.admin",
+            permission = "xjplot.admin",
             usage = "<x1> <z1> <x2> <z2>",
             desc = "创建一个新地块",
             aliases = "pc",
@@ -44,7 +44,7 @@ public class PlotCommand {
         int zMax = Math.max(z1, z2);
 
         // 重叠校验
-        boolean rangeOverlap = this.plotPlugin.transaction(PlotMapper.class, mapper -> {
+        boolean rangeOverlap = this.plugin.transaction(PlotMapper.class, mapper -> {
             return mapper.rangeOverlap(worldName, xMin, zMin, xMax, zMax);
         });
         if (rangeOverlap) {
@@ -62,12 +62,12 @@ public class PlotCommand {
                 .setAddtime(LocalDateTime.now());
 
         // 将地块插入到数据库中
-        int plotId = this.plotPlugin.transaction(PlotMapper.class, mapper -> {
+        int plotId = this.plugin.transaction(PlotMapper.class, mapper -> {
             mapper.save(plot);
             return mapper.lastId();
         });
 
         // 提示玩家创建成功
-        player.sendMessage(String.format("%s创建成功，地块编号：%d, 坐标：(%s, %d, %d, %d, %d)", ChatColor.GREEN, plotId, worldName, xMin, zMin, xMax, zMax));
+        player.sendMessage(String.format("%s创建成功，地块编号：%d, 坐标：(%s, (%d, %d), (%d, %d))", ChatColor.GREEN, plotId, worldName, xMin, zMin, xMax, zMax));
     }
 }

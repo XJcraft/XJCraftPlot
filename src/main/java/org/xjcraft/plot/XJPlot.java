@@ -14,8 +14,12 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.cat73.bukkitboot.annotation.core.BukkitBootPlugin;
 import org.cat73.bukkitboot.util.Lang;
+import org.cat73.bukkitboot.util.Strings;
 import org.cat73.bukkitboot.util.reflect.Scans;
+import org.xjcraft.plot.util.Streams;
 import java.io.IOException;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import javax.sql.DataSource;
@@ -24,7 +28,7 @@ import javax.sql.DataSource;
  * 插件主类
  */
 @BukkitBootPlugin
-public class PlotPlugin extends JavaPlugin {
+public class XJPlot extends JavaPlugin {
     /**
      * 数据库连接的 SqlSession 工厂
      */
@@ -57,7 +61,7 @@ public class PlotPlugin extends JavaPlugin {
         Configuration configuration = new Configuration(environment);
         // 注册 Mapper
         try {
-            for (Class<?> clazz : Scans.scanClass(PlotPlugin.class)) {
+            for (Class<?> clazz : Scans.scanClass(XJPlot.class)) {
                 if (clazz.isInterface() && clazz.getSimpleName().endsWith("Mapper") && clazz.getPackage().getName().contains("mapper")) {
                     configuration.addMapper(clazz);
                 }
@@ -68,6 +72,33 @@ public class PlotPlugin extends JavaPlugin {
 
         // 获得 SqlSessionFactory
         this.sqlSessionFactory = new SqlSessionFactoryBuilder().build(configuration);
+
+        // 自动创建表结构
+        this.createTables();
+    }
+
+    /**
+     * 初始化表结构(执行 mysql.base.sql)
+     */
+    private void createTables() {
+        String sqls;
+        try {
+            sqls = new String(Streams.readAllAsBytes(XJPlot.class.getResourceAsStream("/mysql.base.sql")));
+        } catch (IOException e) {
+            throw Lang.impossible();
+        }
+
+        try (SqlSession sqlSession = this.getSqlSession()) {
+            try (Statement statement = sqlSession.getConnection().createStatement()) {
+                for (String sql : sqls.split(";")) {
+                    if (Strings.notBlank(sql)) {
+                        statement.executeQuery(sql);
+                    }
+                }
+            } catch (SQLException e) {
+                throw Lang.wrapThrow(e);
+            }
+        }
     }
 
     /**
