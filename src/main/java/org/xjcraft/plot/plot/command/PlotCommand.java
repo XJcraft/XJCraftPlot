@@ -1,7 +1,6 @@
 package org.xjcraft.plot.plot.command;
 
 import org.bukkit.ChatColor;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.cat73.bukkitboot.annotation.command.Command;
 import org.cat73.bukkitboot.annotation.core.Bean;
@@ -69,13 +68,15 @@ public class PlotCommand {
             return mapper.lastId();
         });
 
+        // TODO 记录日志
+
         // 提示玩家创建成功
         player.sendMessage(String.format("%s创建成功，地块编号：%d, 范围：(%s, (%d, %d), (%d, %d))", ChatColor.GREEN, plotNo, worldName, xMin, zMin, xMax, zMax));
     }
 
     /**
      * 编辑一个已有地块的范围
-     * @param sender 命令的执行者
+     * @param player 命令的执行者
      * @param plotNo 地块编号
      * @param x1 新范围第一个角落的横坐标
      * @param z1 新范围第一个角落的纵坐标
@@ -86,31 +87,30 @@ public class PlotCommand {
             permission = "xjplot.admin",
             usage = "<plotNo> <x1> <z1> <x2> <z2>",
             desc = "编辑一个已有地块的范围",
-            aliases = "pe"
+            aliases = "pe",
+            target = Command.Target.PLAYER
     )
-    public void plotEdit(CommandSender sender, int plotNo, int x1, int z1, int x2, int z2) {
+    public void plotEdit(Player player, int plotNo, int x1, int z1, int x2, int z2) {
         // 坐标范围
         int xMin = Math.min(x1, x2);
         int xMax = Math.max(x1, x2);
         int zMin = Math.min(z1, z2);
         int zMax = Math.max(z1, z2);
 
-        // 查出旧地块
-        Plot plot = this.plugin.transaction(PlotMapper.class, mapper -> {
-            return mapper.getById(plotNo);
-        });
-        if (plot == null) {
-            sender.sendMessage(ChatColor.RED + "编辑失败，旧地块不存在");
-            return;
-        }
-
         this.plugin.transaction(PlotMapper.class, mapper -> {
+            // 查出旧地块
+            Plot plot = mapper.getById(plotNo);
+            if (plot == null) {
+                player.sendMessage(ChatColor.RED + "编辑失败，旧地块不存在");
+                return;
+            }
+
             // 移除旧地块
             mapper.removeById(plotNo);
 
             // 重叠校验
             if (mapper.rangeOverlap(plot.getWorldName(), xMin, zMin, xMax, zMax)) {
-                sender.sendMessage(ChatColor.RED + "编辑失败，新范围与其他地块重叠");
+                player.sendMessage(ChatColor.RED + "编辑失败，新范围与其他地块重叠");
                 throw new RollbackException(); // 回滚事务，撤销地块移除
             }
 
@@ -123,11 +123,11 @@ public class PlotCommand {
 
             // 将地块插入到数据库中
             mapper.save(plot);
+
+            // TODO 记录日志
+
+            // 提示玩家创建成功
+            player.sendMessage(String.format("%s编辑成功，地块编号：%d, 新范围：(%s, (%d, %d), (%d, %d))", ChatColor.GREEN, plotNo, plot.getWorldName(), xMin, zMin, xMax, zMax));
         });
-
-
-
-        // 提示玩家创建成功
-        sender.sendMessage(String.format("%s编辑成功，地块编号：%d, 新范围：(%s, (%d, %d), (%d, %d))", ChatColor.GREEN, plotNo, plot.getWorldName(), xMin, zMin, xMax, zMax));
     }
 }
