@@ -8,9 +8,7 @@ import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
-import org.apache.ibatis.transaction.TransactionFactory;
 import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.cat73.bukkitboot.annotation.core.BukkitBootPlugin;
 import org.cat73.bukkitboot.util.Lang;
@@ -20,10 +18,8 @@ import org.xjcraft.plot.common.exception.RollbackException;
 import org.xjcraft.plot.util.Streams;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import javax.sql.DataSource;
 
 /**
  * 插件主类
@@ -46,23 +42,23 @@ public class XJPlot extends JavaPlugin {
      * 初始化数据库连接
      */
     public void initDatabase() {
-        ConfigurationSection config = this.getConfig();
+        var config = this.getConfig();
 
         // 构造数据源
-        HikariConfig hikariConfig = new HikariConfig();
+        var hikariConfig = new HikariConfig();
         hikariConfig.setDriverClassName(config.getString("db.driver"));
         hikariConfig.setJdbcUrl(config.getString("db.url"));
         hikariConfig.setUsername(config.getString("db.username"));
         hikariConfig.setPassword(config.getString("db.password"));
-        DataSource dataSource = new HikariDataSource(hikariConfig);
+        var dataSource = new HikariDataSource(hikariConfig);
 
         // 构造各类配置
-        TransactionFactory transactionFactory = new JdbcTransactionFactory();
-        Environment environment = new Environment("development", transactionFactory, dataSource);
-        Configuration configuration = new Configuration(environment);
+        var transactionFactory = new JdbcTransactionFactory();
+        var environment = new Environment("development", transactionFactory, dataSource);
+        var configuration = new Configuration(environment);
         // 注册 Mapper
         try {
-            for (Class<?> clazz : Scans.scanClass(XJPlot.class)) {
+            for (var clazz : Scans.scanClass(XJPlot.class)) {
                 if (clazz.isInterface() && clazz.getSimpleName().endsWith("Mapper") && clazz.getPackage().getName().contains("mapper")) {
                     configuration.addMapper(clazz);
                 }
@@ -89,9 +85,9 @@ public class XJPlot extends JavaPlugin {
             throw Lang.impossible();
         }
 
-        try (SqlSession sqlSession = this.getSqlSession()) {
-            try (Statement statement = sqlSession.getConnection().createStatement()) {
-                for (String sql : sqls.split(";")) {
+        try (var sqlSession = this.getSqlSession()) {
+            try (var statement = sqlSession.getConnection().createStatement()) {
+                for (var sql : sqls.split(";")) {
                     if (Strings.notBlank(sql)) {
                         statement.executeQuery(sql);
                     }
@@ -111,13 +107,13 @@ public class XJPlot extends JavaPlugin {
     }
 
     /**
-     * 执行一个事务
+     * 在事务中执行一段代码
      * @param code 事务代码，无需在代码中关闭 SqlSession
      * @param <T> 返回值类型
      * @return 事务代码的返回值
      */
     public <T> T transaction(Function<SqlSession, T> code) {
-        SqlSession sqlSession = this.sqlSessionFactory.openSession(false);
+        var sqlSession = this.sqlSessionFactory.openSession(false);
         T result;
         try {
             result = code.apply(sqlSession);
@@ -136,7 +132,7 @@ public class XJPlot extends JavaPlugin {
     }
 
     /**
-     * 执行一个事务
+     * 在事务中执行一段代码
      * @param code 事务代码，无需在代码中关闭 SqlSession
      */
     public void transaction(Consumer<SqlSession> code) {
@@ -147,7 +143,7 @@ public class XJPlot extends JavaPlugin {
     }
 
     /**
-     * 执行一个事务
+     * 在事务中执行一段代码
      * @param clazz 使用的 Mapper 的类型
      * @param code 事务代码
      * @param <T> Mapper 的类型
@@ -156,13 +152,13 @@ public class XJPlot extends JavaPlugin {
      */
     public <T, R> R transaction(Class<? extends T> clazz, Function<T, R> code) {
         return this.transaction(sqlSession -> {
-            T mapper = sqlSession.getMapper(clazz);
+            var mapper = sqlSession.getMapper(clazz);
             return code.apply(mapper);
         });
     }
 
     /**
-     * 执行一个事务
+     * 在事务中执行一段代码
      * @param clazz 使用的 Mapper 的类型
      * @param code 事务代码
      * @param <T> Mapper 的类型

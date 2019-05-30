@@ -36,16 +36,16 @@ public class PlotCommand {
     )
     public void plotCreate(Player player, int x1, int z1, int x2, int z2) {
         // 所在的世界名
-        String worldName = player.getWorld().getName();
+        var worldName = player.getWorld().getName();
 
         // 坐标范围
-        int xMin = Math.min(x1, x2);
-        int xMax = Math.max(x1, x2);
-        int zMin = Math.min(z1, z2);
-        int zMax = Math.max(z1, z2);
+        var xMin = Math.min(x1, x2);
+        var xMax = Math.max(x1, x2);
+        var zMin = Math.min(z1, z2);
+        var zMax = Math.max(z1, z2);
 
         // 重叠校验
-        boolean rangeOverlap = this.plugin.transaction(PlotMapper.class, mapper -> {
+        var rangeOverlap = this.plugin.transaction(PlotMapper.class, mapper -> {
             return mapper.rangeOverlap(worldName, xMin, zMin, xMax, zMax);
         });
         if (rangeOverlap) {
@@ -54,7 +54,7 @@ public class PlotCommand {
         }
 
         // 创建地块实体
-        Plot plot = new Plot()
+        var plot = new Plot()
                 .setWorldName(worldName)
                 .setX1(xMin)
                 .setZ1(zMin)
@@ -63,7 +63,7 @@ public class PlotCommand {
                 .setAddtime(LocalDateTime.now());
 
         // 将地块插入到数据库中
-        int plotNo = this.plugin.transaction(PlotMapper.class, mapper -> {
+        var plotNo = this.plugin.transaction(PlotMapper.class, mapper -> {
             mapper.save(plot);
             return mapper.lastId();
         });
@@ -92,14 +92,14 @@ public class PlotCommand {
     )
     public void plotEdit(Player player, int plotNo, int x1, int z1, int x2, int z2) {
         // 坐标范围
-        int xMin = Math.min(x1, x2);
-        int xMax = Math.max(x1, x2);
-        int zMin = Math.min(z1, z2);
-        int zMax = Math.max(z1, z2);
+        var xMin = Math.min(x1, x2);
+        var xMax = Math.max(x1, x2);
+        var zMin = Math.min(z1, z2);
+        var zMax = Math.max(z1, z2);
 
         this.plugin.transaction(PlotMapper.class, mapper -> {
             // 查出旧地块
-            Plot plot = mapper.getById(plotNo);
+            var plot = mapper.getById(plotNo);
             if (plot == null) {
                 player.sendMessage(ChatColor.RED + "编辑失败，旧地块不存在");
                 return;
