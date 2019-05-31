@@ -29,6 +29,23 @@ public interface PlotMapper extends CommonMapper {
     Plot getById(@Param("id") int id);
 
     /**
+     * 根据坐标查询地块
+     * @param worldName 世界名
+     * @param x x 坐标
+     * @param z z 坐标
+     * @return 查到的地块，如果没查到则返回 null
+     */
+    @Select({
+            "SELECT",
+              SELECT_FIELDS,
+            "FROM " + TABLE_NAME,
+            "WHERE world_name = #{worldName}",
+            "AND x1 >= #{x} AND x2 <= #{x}",
+            "AND z1 >= #{z} AND z2 <= #{z}",
+    })
+    Plot getByPos(String worldName, int x, int z);
+
+    /**
      * 插入一条新记录
      * @param plot 被插入的地块的实体
      */

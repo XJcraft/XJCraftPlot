@@ -112,7 +112,7 @@ public class XJPlot extends JavaPlugin {
      * @param <T> 返回值类型
      * @return 事务代码的返回值
      */
-    public <T> T transaction(Function<SqlSession, T> code) {
+    public <T> T tranr(Function<SqlSession, T> code) {
         var sqlSession = this.sqlSessionFactory.openSession(false);
         T result;
         try {
@@ -135,8 +135,8 @@ public class XJPlot extends JavaPlugin {
      * 在事务中执行一段代码
      * @param code 事务代码，无需在代码中关闭 SqlSession
      */
-    public void transaction(Consumer<SqlSession> code) {
-        this.transaction(sqlSession -> {
+    public void tran(Consumer<SqlSession> code) {
+        this.tranr(sqlSession -> {
             code.accept(sqlSession);
             return null;
         });
@@ -150,8 +150,8 @@ public class XJPlot extends JavaPlugin {
      * @param <R> 返回值的类型
      * @return 事务代码的返回值
      */
-    public <T, R> R transaction(Class<? extends T> clazz, Function<T, R> code) {
-        return this.transaction(sqlSession -> {
+    public <T, R> R tranr(Class<? extends T> clazz, Function<T, R> code) {
+        return this.tranr(sqlSession -> {
             var mapper = sqlSession.getMapper(clazz);
             return code.apply(mapper);
         });
@@ -163,8 +163,8 @@ public class XJPlot extends JavaPlugin {
      * @param code 事务代码
      * @param <T> Mapper 的类型
      */
-    public <T> void transaction(Class<? extends T> clazz, Consumer<T> code) {
-        this.transaction(clazz, mapper -> {
+    public <T> void tran(Class<? extends T> clazz, Consumer<T> code) {
+        this.tranr(clazz, mapper -> {
             code.accept(mapper);
             return null;
         });

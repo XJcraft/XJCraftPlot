@@ -70,7 +70,7 @@ public class Streams {
         } finally {
             // 关闭输入流
             Streams.closeQuietly(in);
-            // 如果需要则关闭输出流，否则 flash 输出流
+            // 如果需要则关闭输出流，否则 flush 输出流
             if (closeOutputStream) {
                 Streams.closeQuietly(out);
             } else {
