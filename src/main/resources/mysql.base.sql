@@ -6,7 +6,7 @@
 -- -----------------------------------
 -- 地块表
 -- -----------------------------------
-CREATE TABLE IF NOT EXISTS xjplot_plot (
+CREATE TABLE IF NOT EXISTS `xjplot_plot` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '地块编号',
   `world_name` varchar(255) NOT NULL COMMENT '世界名',
   `x1` int(11) NOT NULL COMMENT 'x 坐标中较小的数字',
@@ -16,3 +16,31 @@ CREATE TABLE IF NOT EXISTS xjplot_plot (
   `addtime` datetime(3) NOT NULL COMMENT '创建时间',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB COMMENT = '地块';
+
+-- -----------------------------------
+-- 余额表
+-- -----------------------------------
+CREATE TABLE IF NOT EXISTS `xjplot_balance` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `player_name` varchar(255) NOT NULL COMMENT '玩家名',
+  `balance` decimal(16, 6) NOT NULL COMMENT '余额',
+  `freeze` decimal(16, 6) NOT NULL COMMENT '冻结额度',
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `unique_player_name`(`player_name`)
+) ENGINE = InnoDB COMMENT = '余额';
+
+-- -----------------------------------
+-- 余额操作记录表
+-- -----------------------------------
+CREATE TABLE IF NOT EXISTS `xjplot_balance_log` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `balance_id` int(11) NOT NULL,
+  `addtime` datetime(3) NOT NULL COMMENT '操作时间',
+  `type` varchar(64) NOT NULL COMMENT '操作类型',
+  `before_balance` decimal(16, 6) NOT NULL COMMENT '操作前的余额',
+  `before_freeze` decimal(16, 6) NOT NULL COMMENT '操作前的冻结额度',
+  `change_balance` decimal(16, 6) NOT NULL COMMENT '余额的变更值(入正出负)',
+  `change_freeze` decimal(16, 6) NOT NULL COMMENT '冻结额度的变更值(入正出负)',
+  `remark` varchar(255) NULL DEFAULT NULL COMMENT '备注',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB COMMENT = '余额操作记录';
