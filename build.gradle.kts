@@ -30,6 +30,7 @@ repositories {
     mavenLocal()
     jcenter()
     maven("https://hub.spigotmc.org/nexus/content/repositories/public")
+    maven("https://oss.sonatype.org/content/repositories/snapshots")
 }
 
 // 源文件编码

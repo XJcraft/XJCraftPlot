@@ -34,5 +34,8 @@ rm -fv ${SERVER_DIR}/plugins/*.jar
 cd ${BASE_DIR}
 ${BASE_DIR}/gradlew clean jar
 
+# 拷贝 BukkitBoot
+${BASE_DIR}/gradlew runtime:copyDep
+
 # 拷贝构建结果到插件目录
 cp -v ${BASE_DIR}/build/libs/*.jar ${SERVER_DIR}/plugins/
