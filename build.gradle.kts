@@ -5,6 +5,18 @@ plugins {
 group = "org.xjcraft.plot"
 version = "1.0.0"
 
+// ext
+val bukkitVersion     =         "1.14.2-R0.1-SNAPSHOT"
+val lombokVersion     =         "1.18.8"
+val bukkitbootVersion =         "1.0.0-SNAPSHOT"
+val dependencyNames = mapOf(
+        "bukkit"               to "org.bukkit:bukkit:$bukkitVersion",
+        "spigot"               to "org.spigotmc:spigot:$bukkitVersion",
+        "lombok"               to "org.projectlombok:lombok:$lombokVersion",
+        "bukkitboot"           to "org.cat73.bukkitboot:bukkit-boot:$bukkitbootVersion"
+)
+extra["dependencyNames"] = dependencyNames
+
 // Java 版本
 configure<JavaPluginConvention> {
     val javaVersion = JavaVersion.VERSION_11
@@ -29,12 +41,11 @@ val share by configurations.creating
 
 // 依赖
 dependencies {
-    compileOnly             ("org.bukkit:bukkit:1.14.2-R0.1-SNAPSHOT")
-    annotationProcessor     ("org.projectlombok:lombok:1.18.8")
-    compileOnly             ("org.projectlombok:lombok:1.18.8")
+    compileOnly             ("${dependencyNames["bukkit"]}")
+    annotationProcessor     ("${dependencyNames["lombok"]}")
+    compileOnly             ("${dependencyNames["lombok"]}")
 
-    compileOnly             ("org.cat73.bukkitboot:bukkit-boot:1.0.0-SNAPSHOT")
-
+    compileOnly             ("${dependencyNames["bukkitboot"]}")
     compileOnly             ("com.zaxxer:HikariCP:3.3.1")
     share                   ("com.zaxxer:HikariCP:3.3.1")
     compileOnly             ("org.mybatis:mybatis:3.5.1")
