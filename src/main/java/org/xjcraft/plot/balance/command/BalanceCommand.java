@@ -81,4 +81,7 @@ public class BalanceCommand {
 
         player.sendMessage(String.format("%s为玩家 %s 的余额为 %s 元，其中，已冻结的额度为 %s 元", ChatColor.GREEN, playerName, balance.getBalance(), balance.getFreeze()));
     }
+
+    // TODO Cat73
+    //  玩家充值
 }

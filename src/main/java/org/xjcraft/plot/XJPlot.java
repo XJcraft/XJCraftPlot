@@ -12,6 +12,7 @@ import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.cat73.bukkitboot.annotation.core.BukkitBootPlugin;
 import org.cat73.bukkitboot.util.Lang;
+import org.cat73.bukkitboot.util.Logger;
 import org.cat73.bukkitboot.util.Strings;
 import org.cat73.bukkitboot.util.reflect.Scans;
 import org.xjcraft.plot.common.exception.RollbackException;
@@ -35,7 +36,12 @@ public class XJPlot extends JavaPlugin {
     @Override
     public void onLoad() {
         this.saveDefaultConfig();
-        this.initDatabase();
+        try {
+            this.initDatabase();
+        } catch(Exception e) {
+            Logger.error("初始化数据库连接失败，请检查数据库地址、账号、密码是否正确");
+            throw Lang.throwAny(e);
+        }
     }
 
     /**
