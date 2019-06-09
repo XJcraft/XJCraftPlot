@@ -54,6 +54,10 @@ public class BalanceLog {
         /**
          * OP 充值
          */
-        OP_RECHARGE
+        OP_RECHARGE,
+        /**
+         * 充值
+         */
+        RECHARGE
     }
 }

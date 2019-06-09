@@ -3,7 +3,6 @@ package org.xjcraft.plot.util;
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitTask;
 import org.cat73.bukkitboot.util.Plugins;
-import org.xjcraft.plot.XJPlot;
 
 /**
  * 一个可过期的操作
@@ -12,11 +11,6 @@ import org.xjcraft.plot.XJPlot;
  * <p>或调用 doAction 来执行预定的 action</p>
  */
 public class ExpireAction {
-    /**
-     * 插件本体的实例
-     */
-    private static XJPlot plugin = Plugins.current();
-
     /**
      * 在 Bukkit 注册的定时任务
      */
@@ -52,7 +46,7 @@ public class ExpireAction {
     public ExpireAction(int tickCount, Runnable action, Runnable timeoutAction) {
         this.action = action;
         this.timeoutAction = timeoutAction;
-        this.task = Bukkit.getServer().getScheduler().runTaskLater(plugin, this::timeout, tickCount);
+        this.task = Bukkit.getServer().getScheduler().runTaskLater(Plugins.current(), this::timeout, tickCount);
     }
 
     /**

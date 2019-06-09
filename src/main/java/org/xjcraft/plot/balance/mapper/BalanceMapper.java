@@ -45,8 +45,8 @@ public interface BalanceMapper {
      */
     @Update({
             "UPDATE " + TABLE_NAME + " SET ",
-              "player_name=#{balance.playerName}",
-              "balance=#{balance.balance}",
+              "player_name=#{balance.playerName},",
+              "balance=#{balance.balance},",
               "freeze=#{balance.freeze}",
             "WHERE id=#{balance.id}"
     })
