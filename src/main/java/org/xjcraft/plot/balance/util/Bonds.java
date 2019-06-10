@@ -12,6 +12,7 @@ public class Bonds {
      * 获取国债的额度
      * @param itemStack 国债
      * @return 国债的额度，注意，如果是堆叠的国债，如 10 本 4 元，也只会输出 4
+     *         如果入参不是国债，则会输出 0
      */
     public static int getValue(ItemStack itemStack) {
         // 滤掉 null

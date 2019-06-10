@@ -3,10 +3,10 @@ package org.xjcraft.plot.balance.command;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.cat73.bukkitboot.annotation.command.Command;
 import org.cat73.bukkitboot.annotation.core.Bean;
 import org.cat73.bukkitboot.annotation.core.Inject;
-import org.cat73.bukkitboot.util.PlayerSession;
 import org.cat73.bukkitboot.util.Strings;
 import org.xjcraft.plot.XJPlot;
 import org.xjcraft.plot.balance.entity.BalanceLog;
@@ -94,64 +94,66 @@ public class BalanceCommand {
     )
     public void balanceRecharge(Player player) {
         // 统计背包中的国债额度
+        int money = this.sumBondsMoney(player.getInventory());
+        if (money == 0) {
+            player.sendMessage(ChatColor.RED + "您的背包中没有国债，请先持有一些国债再进行充值");
+            return;
+        }
+
+        // 设置一个需要玩家二次确认的充值操作
+        ExpireAction.auto(player)
+                .action(() -> {
+                    // 在此计算背包中的国债额度，防止玩家在确认之前进行过背包操作
+                    int rechargeMoney = this.sumBondsMoney(player.getInventory());
+                    if (rechargeMoney == 0) {
+                        player.sendMessage(ChatColor.RED + "您的背包中没有国债，请先持有一些国债再进行充值");
+                        return;
+                    }
+
+                    // 移除玩家背包中的国债
+                    for (var itemStack : player.getInventory().getContents()) {
+                        var curMoney = Bonds.getValue(itemStack);
+
+                        // 移除国债
+                        if (curMoney != 0) {
+                            itemStack.setType(Material.AIR);
+                        }
+                    }
+
+                    // 将充值的额度存入数据库中
+                    var finalMoney = BigDecimal.valueOf(rechargeMoney);
+                    var newBalance = this.plugin.tranr(session -> {
+                        this.service.log(session, player.getName(), BalanceLog.AccountLogType.RECHARGE, finalMoney, BigDecimal.ZERO, null);
+                        return this.service.getByPlayer(session, player.getName());
+                    }).getBalance();
+
+                    // TODO 记录日志
+
+                    // 提示玩家充值结果
+                    player.sendMessage(String.format("%s充值 %s元成功，充值后余额 %s元", ChatColor.GREEN, finalMoney, newBalance));
+                })
+                .successAction(() -> {
+                    // 提示玩家确认
+                    player.sendMessage(String.format("%s您将要把背包中的所有国债(%d元)充值为余额", ChatColor.GREEN, money));
+                    player.sendMessage(String.format("%s如果您确认要充值，请输入 /xjplot confirm 来确认", ChatColor.GREEN));
+                })
+                .start();
+    }
+
+    /**
+     * 计算一个容器中的国债额度之和
+     * @param inventory 容器
+     * @return 国债额度之和
+     */
+    private int sumBondsMoney(Inventory inventory) {
         int money = 0;
-        for (var itemStack : player.getInventory().getContents()) {
+        for (var itemStack : inventory.getContents()) {
             if (itemStack != null) {
                 var curMoney = Bonds.getValue(itemStack);
                 curMoney *= itemStack.getAmount();
                 money += curMoney;
             }
         }
-        if (money == 0) {
-            player.sendMessage(ChatColor.RED + "您的背包中没有国债，请先持有一些国债再进行充值");
-            return;
-        }
-
-        // 如果存在正在等待确认的操作，则提示错误
-        ExpireAction currentAction = PlayerSession.forPlayer(player).get("waitAction");
-        if (currentAction != null && !currentAction.isTimeout()) {
-            player.sendMessage(ChatColor.RED + "有正在等待确认的操作，请确认或等待上一个操作过期后重试");
-            return;
-        }
-
-        // 添加等待确认的操作
-        PlayerSession.forPlayer(player).set("waitAction", new ExpireAction(30 * 20, () -> {
-            // 在此计算背包中的国债额度，放置玩家在确认之前进行过背包操作
-            // 同时顺便移除掉背包中的国债
-            int rechargeMoney = 0;
-            for (var itemStack : player.getInventory().getContents()) {
-                if (itemStack != null) {
-                    var curMoney = Bonds.getValue(itemStack);
-                    curMoney *= itemStack.getAmount();
-                    rechargeMoney += curMoney;
-
-                    // 移除国债
-                    if (curMoney != 0) {
-                        itemStack.setType(Material.AIR);
-                    }
-                }
-            }
-
-            if (rechargeMoney == 0) {
-                player.sendMessage(ChatColor.RED + "您的背包中没有国债，请先持有一些国债再进行充值");
-                return;
-            }
-
-            // 将充值的额度存入数据库中
-            var finalMoney = BigDecimal.valueOf(rechargeMoney);
-            var newBalance = this.plugin.tranr(session -> {
-                this.service.log(session, player.getName(), BalanceLog.AccountLogType.RECHARGE, finalMoney, BigDecimal.ZERO, null);
-                return this.service.getByPlayer(session, player.getName());
-            }).getBalance();
-
-            // TODO 记录日志
-
-            // 提示玩家充值结果
-            player.sendMessage(String.format("%s充值 %s元成功，充值后余额 %s元", ChatColor.GREEN, finalMoney, newBalance));
-        }));
-
-        // 提示玩家确认
-        player.sendMessage(String.format("%s您将要把背包中的所有国债(%d元)充值为余额", ChatColor.GREEN, money));
-        player.sendMessage(String.format("%s如果您确认要充值，请输入 /xjplot confirm 来确认", ChatColor.GREEN));
+        return money;
     }
 }

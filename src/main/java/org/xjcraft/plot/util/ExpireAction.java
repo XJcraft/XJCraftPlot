@@ -1,8 +1,15 @@
 package org.xjcraft.plot.util;
 
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
+import org.cat73.bukkitboot.util.PlayerSession;
 import org.cat73.bukkitboot.util.Plugins;
+import java.util.Optional;
 
 /**
  * 一个可过期的操作
@@ -55,9 +62,7 @@ public class ExpireAction {
     private void timeout() {
         if (!this.isTimeout()) {
             this.timeout = true;
-            if (this.timeoutAction != null) {
-                this.timeoutAction.run();
-            }
+            Optional.ofNullable(this.timeoutAction).ifPresent(Runnable::run);
         }
     }
 
@@ -82,9 +87,64 @@ public class ExpireAction {
     public void doAction() {
         if (!this.isTimeout()) {
             this.cancel();
-            if (this.action != null) {
-                this.action.run();
+            Optional.ofNullable(this.action).ifPresent(Runnable::run);
+        }
+    }
+
+    /**
+     * 获取一个自动设置可过期操作的 Builder
+     * @param player 操作的玩家
+     * @return Builder 的实例
+     */
+    public static ExpireActionBuilder auto(Player player) {
+        return new ExpireActionBuilder(player);
+    }
+
+    /**
+     * 自动设置可过期操作的 Builder
+     */
+    @RequiredArgsConstructor
+    @Setter
+    @Accessors(chain = true, fluent = true)
+    public static class ExpireActionBuilder {
+        /**
+         * 操作的玩家
+         */
+        private final Player player;
+        /**
+         * 过期时间，默认为 30s(600 tick)
+         */
+        private int tickCount = 30 * 20;
+        /**
+         * 要执行的操作
+         */
+        private Runnable action;
+        /**
+         * 过期时执行的操作
+         */
+        private Runnable timeoutAction;
+        /**
+         * 设置失败(由于有正在等待确认的操作)时进行的操作，通常用于提示玩家失败
+         */
+        private Runnable failAction = () -> this.player.sendMessage(ChatColor.RED + "有正在等待确认的操作，请确认或等待上一个操作过期后重试");
+        /**
+         * 设置成功时进行的操作，通常用于提示玩家确认
+         */
+        private Runnable successAction = () -> this.player.sendMessage(ChatColor.GREEN + "如果您确认要进行操作，请输入 /xjplot confirm 来确认");
+
+        public void start() {
+            // 如果存在正在等待确认的操作，则执行失败操作
+            ExpireAction currentAction = PlayerSession.forPlayer(this.player).get("waitAction");
+            if (currentAction != null && !currentAction.isTimeout()) {
+                Optional.ofNullable(this.failAction).ifPresent(Runnable::run);
+                return;
             }
+
+            // 添加等待确认的操作
+            PlayerSession.forPlayer(player).set("waitAction", new ExpireAction(this.tickCount, this.action, this.timeoutAction));
+
+            // 执行成功操作
+            Optional.ofNullable(this.successAction).ifPresent(Runnable::run);
         }
     }
 }
