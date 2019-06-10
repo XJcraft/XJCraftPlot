@@ -51,6 +51,10 @@ public class ExpireAction {
      * @param timeoutAction 过期时要执行的操作
      */
     public ExpireAction(int tickCount, Runnable action, Runnable timeoutAction) {
+        if (tickCount <= 0) {
+            throw new IllegalArgumentException("tickCount <= 0");
+        }
+
         this.action = action;
         this.timeoutAction = timeoutAction;
         this.task = Bukkit.getServer().getScheduler().runTaskLater(Plugins.current(), this::timeout, tickCount);
@@ -93,6 +97,7 @@ public class ExpireAction {
 
     /**
      * 获取一个自动设置可过期操作的 Builder
+     * <p>一般用于给一个玩家设置一个带有效期的、需要确认的操作</p>
      * @param player 操作的玩家
      * @return Builder 的实例
      */
@@ -116,7 +121,7 @@ public class ExpireAction {
          */
         private int tickCount = 30 * 20;
         /**
-         * 要执行的操作
+         * 玩家确认时要执行的操作
          */
         private Runnable action;
         /**
