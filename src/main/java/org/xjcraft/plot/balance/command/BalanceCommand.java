@@ -94,7 +94,7 @@ public class BalanceCommand {
     )
     public void balanceRecharge(Player player) {
         // 统计背包中的国债额度
-        int money = this.sumBondsMoney(player.getInventory());
+        var money = this.sumBondsMoney(player.getInventory());
         if (money == 0) {
             player.sendMessage(ChatColor.RED + "您的背包中没有国债，请先持有一些国债再进行充值");
             return;
@@ -104,7 +104,7 @@ public class BalanceCommand {
         ExpireAction.auto(player)
                 .action(() -> {
                     // 在此计算背包中的国债额度，防止玩家在确认之前进行过背包操作
-                    int rechargeMoney = this.sumBondsMoney(player.getInventory());
+                    var rechargeMoney = this.sumBondsMoney(player.getInventory());
                     if (rechargeMoney == 0) {
                         player.sendMessage(ChatColor.RED + "您的背包中没有国债，请先持有一些国债再进行充值");
                         return;

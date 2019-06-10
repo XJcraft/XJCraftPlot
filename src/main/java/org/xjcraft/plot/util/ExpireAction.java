@@ -1,6 +1,5 @@
 package org.xjcraft.plot.util;
 
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.bukkit.Bukkit;
@@ -108,7 +107,6 @@ public class ExpireAction {
     /**
      * 自动设置可过期操作的 Builder
      */
-    @RequiredArgsConstructor
     @Setter
     @Accessors(chain = true, fluent = true)
     public static class ExpireActionBuilder {
@@ -131,11 +129,17 @@ public class ExpireAction {
         /**
          * 设置失败(由于有正在等待确认的操作)时进行的操作，通常用于提示玩家失败
          */
-        private Runnable failAction = () -> this.player.sendMessage(ChatColor.RED + "有正在等待确认的操作，请确认或等待上一个操作过期后重试");
+        private Runnable failAction;
         /**
          * 设置成功时进行的操作，通常用于提示玩家确认
          */
-        private Runnable successAction = () -> this.player.sendMessage(ChatColor.GREEN + "如果您确认要进行操作，请输入 /xjplot confirm 来确认");
+        private Runnable successAction;
+
+        private ExpireActionBuilder(Player player) {
+            this.player = player;
+            this.failAction = () -> this.player.sendMessage(ChatColor.RED + "有正在等待确认的操作，请确认或等待上一个操作过期后重试");
+            this.successAction = () -> this.player.sendMessage(ChatColor.GREEN + "如果您确认要进行操作，请输入 /xjplot confirm 来确认");
+        }
 
         public void start() {
             // 如果存在正在等待确认的操作，则执行失败操作
