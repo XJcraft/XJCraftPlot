@@ -8,8 +8,8 @@ import org.xjcraft.plot.plot.entity.Plot;
  * 地块的 Mapper 接口
  */
 public interface PlotMapper extends CommonMapper {
-    String INSERT_FIELDS = "id, world_name, x1, z1, x2, z2, addtime";
-    String SELECT_FIELDS = "id, world_name AS worldName, x1, z1, x2, z2, addtime";
+    String INSERT_FIELDS = "id, world_name, x1, z1, x2, z2, addtime, lease_type, lease_params";
+    String SELECT_FIELDS = "id, world_name AS worldName, x1, z1, x2, z2, addtime, lease_type AS leaseType, lease_params AS leaseParams";
     String TABLE_NAME = "xjplot_plot";
 
     /**
@@ -50,7 +50,7 @@ public interface PlotMapper extends CommonMapper {
             "INSERT INTO ",
               TABLE_NAME, "(",
                 INSERT_FIELDS,
-              ") VALUES (#{plot.id}, #{plot.worldName}, #{plot.x1}, #{plot.z1}, #{plot.x2}, #{plot.z2}, #{plot.addtime})"
+              ") VALUES (#{plot.id}, #{plot.worldName}, #{plot.x1}, #{plot.z1}, #{plot.x2}, #{plot.z2}, #{plot.addtime}, #{plot.leaseType}, #{plot.leaseParams})"
     })
     void save(@Param("plot") Plot plot);
 

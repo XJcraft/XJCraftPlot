@@ -6,7 +6,7 @@ group = "org.xjcraft.plot"
 version = "1.0.0"
 
 // ext
-val bukkitVersion     =         "1.14.2-R0.1-SNAPSHOT"
+val bukkitVersion     =         "1.14.4-R0.1-SNAPSHOT"
 val lombokVersion     =         "1.18.8"
 val bukkitbootVersion =         "1.0.0-SNAPSHOT"
 val dependencyNames = mapOf(
@@ -49,10 +49,10 @@ dependencies {
     compileOnly             ("${dependencyNames["bukkitboot"]}")
     compileOnly             ("com.zaxxer:HikariCP:3.3.1")
     share                   ("com.zaxxer:HikariCP:3.3.1")
-    compileOnly             ("org.mybatis:mybatis:3.5.1")
-    share                   ("org.mybatis:mybatis:3.5.1")
-    compileOnly             ("mysql:mysql-connector-java:8.0.16")
-    share                   ("mysql:mysql-connector-java:8.0.16")
+    compileOnly             ("org.mybatis:mybatis:3.5.2")
+    share                   ("org.mybatis:mybatis:3.5.2")
+    compileOnly             ("mysql:mysql-connector-java:8.0.17")
+    share                   ("mysql:mysql-connector-java:8.0.17")
 }
 
 tasks.withType<Jar> {

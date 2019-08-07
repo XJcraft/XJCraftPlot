@@ -60,7 +60,9 @@ public class PlotCommand {
                 .setZ1(zMin)
                 .setX2(xMax)
                 .setZ2(zMax)
-                .setAddtime(LocalDateTime.now());
+                .setAddtime(LocalDateTime.now())
+                .setLeaseType(Plot.LeaseType.UNDEFINED)
+                .setLeaseParams("");
 
         // 将地块插入到数据库中
         var plotNo = this.plugin.tranr(PlotMapper.class, mapper -> {
@@ -183,4 +185,8 @@ public class PlotCommand {
                 })
                 .start();
     }
+
+    // TODO 租赁方式调整
+    // TODO 地块查看
+    // TODO 查看周围地块
 }

@@ -38,4 +38,34 @@ public class Plot {
      * 地块的创建时间
      */
     private LocalDateTime addtime;
+    /**
+     * 租赁方式
+     */
+    private LeaseType leaseType;
+    /**
+     * 租赁方式 - 参数
+     */
+    private String leaseParams;
+
+    /**
+     * 租赁方式
+     */
+    public enum LeaseType {
+        /**
+         * 未定义 (不允许出租)
+         */
+        UNDEFINED,
+        /**
+         * 租赁
+         */
+        LEASE,
+        /**
+         * 一口价
+         */
+        PERMANENT,
+        /**
+         * 福利地块 (免费)
+         */
+        FREE
+    }
 }

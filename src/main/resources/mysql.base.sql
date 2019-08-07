@@ -14,6 +14,8 @@ CREATE TABLE IF NOT EXISTS `xjplot_plot` (
   `x2` int(11) NOT NULL COMMENT 'x 坐标中较大的数字',
   `z2` int(11) NOT NULL COMMENT 'z 坐标中较大的数字',
   `addtime` datetime(3) NOT NULL COMMENT '创建时间',
+  `lease_type` varchar(255) NOT NULL COMMENT '租赁方式',
+  `lease_params` varchar(255) NOT NULL COMMENT '租赁方式_参数(如租金)',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB COMMENT = '地块';
 
@@ -44,3 +46,17 @@ CREATE TABLE IF NOT EXISTS `xjplot_balance_log` (
   `remark` varchar(255) NULL DEFAULT NULL COMMENT '备注',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB COMMENT = '余额操作记录';
+
+-- -----------------------------------
+-- 操作日志表
+-- -----------------------------------
+CREATE TABLE IF NOT EXISTS `xjplot_log`  (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `player_name` varchar(255) NOT NULL COMMENT '玩家名',
+  `addtime` datetime(3) NOT NULL COMMENT '创建时间',
+  `type` varchar(255) NOT NULL COMMENT '日志类型',
+  `remark` varchar(255) NOT NULL COMMENT '日志内容',
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_player_name_type`(`player_name`, `type`) USING BTREE
+) ENGINE = InnoDB COMMENT = '操作日志';
+BalanceLogMapper
