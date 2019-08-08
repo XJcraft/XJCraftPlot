@@ -40,7 +40,7 @@ public interface PlotMapper extends CommonMapper {
             "AND x1 >= #{x} AND x2 <= #{x}",
             "AND z1 >= #{z} AND z2 <= #{z}"
     })
-    Plot getByPos(String worldName, int x, int z);
+    Plot getByPos(@Param("worldName") String worldName, @Param("x") int x, @Param("z") int z);
 
     /**
      * 插入一条新记录

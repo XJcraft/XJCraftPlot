@@ -32,6 +32,7 @@ public class Log {
      * 操作类型
      */
     public enum LogType {
+        // 账目
         /**
          * OP 充值
          */
@@ -40,5 +41,18 @@ public class Log {
          * 充值
          */
         RECHARGE,
+        // 地块
+        /**
+         * 创建地块
+         */
+        CREATE_PLOT,
+        /**
+         * 编辑地块
+         */
+        EDIT_PLOT,
+        /**
+         * 移除地块
+         */
+        REMOVE_PLOT,
     }
 }

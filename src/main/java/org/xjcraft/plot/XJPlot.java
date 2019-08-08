@@ -15,12 +15,10 @@ import org.cat73.bukkitboot.util.Lang;
 import org.cat73.bukkitboot.util.Logger;
 import org.cat73.bukkitboot.util.Strings;
 import org.cat73.bukkitboot.util.reflect.Scans;
-import org.xjcraft.plot.common.exception.RollbackException;
+import org.xjcraft.plot.util.DB;
 import org.xjcraft.plot.util.Streams;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 /**
  * 插件主类
@@ -32,6 +30,10 @@ public class XJPlot extends JavaPlugin {
      */
     @Getter
     private SqlSessionFactory sqlSessionFactory;
+
+    public XJPlot() {
+        DB.setPluginInstance(this);
+    }
 
     @Override
     public void onLoad() {
@@ -110,69 +112,5 @@ public class XJPlot extends JavaPlugin {
      */
     public SqlSession getSqlSession() {
         return this.sqlSessionFactory.openSession();
-    }
-
-    /**
-     * 在事务中执行一段代码
-     * @param code 事务代码，无需在代码中关闭 SqlSession
-     * @param <T> 返回值类型
-     * @return 事务代码的返回值
-     */
-    public <T> T tranr(Function<SqlSession, T> code) {
-        var sqlSession = this.sqlSessionFactory.openSession(false);
-        T result;
-        try {
-            result = code.apply(sqlSession);
-            sqlSession.commit();
-        } catch (RollbackException e) {
-            sqlSession.rollback();
-            return null;
-        } catch (Exception e) {
-            sqlSession.rollback();
-            throw Lang.wrapThrow(e);
-        } finally {
-            sqlSession.close();
-        }
-
-        return result;
-    }
-
-    /**
-     * 在事务中执行一段代码
-     * @param code 事务代码，无需在代码中关闭 SqlSession
-     */
-    public void tran(Consumer<SqlSession> code) {
-        this.tranr(sqlSession -> {
-            code.accept(sqlSession);
-            return null;
-        });
-    }
-
-    /**
-     * 在事务中执行一段代码
-     * @param clazz 使用的 Mapper 的类型
-     * @param code 事务代码
-     * @param <T> Mapper 的类型
-     * @param <R> 返回值的类型
-     * @return 事务代码的返回值
-     */
-    public <T, R> R tranr(Class<? extends T> clazz, Function<T, R> code) {
-        return this.tranr(sqlSession -> {
-            var mapper = sqlSession.getMapper(clazz);
-            return code.apply(mapper);
-        });
-    }
-
-    /**
-     * 在事务中执行一段代码
-     * @param clazz 使用的 Mapper 的类型
-     * @param code 事务代码
-     * @param <T> Mapper 的类型
-     */
-    public <T> void tran(Class<? extends T> clazz, Consumer<T> code) {
-        this.tranr(clazz, mapper -> {
-            code.accept(mapper);
-            return null;
-        });
     }
 }
