@@ -2,7 +2,6 @@ package org.xjcraft.plot.log.entity;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -15,7 +14,7 @@ public class Log {
     /**
      * 余额表的 ID
      */
-    private Integer balanceId;
+    private String playerName;
     /**
      * 操作时间
      */
@@ -23,25 +22,7 @@ public class Log {
     /**
      * 操作类型
      */
-    private AccountLogType type;
-
-    /**
-     * 操作前的余额
-     */
-    private BigDecimal beforeBalance;
-    /**
-     * 操作前的冻结额度
-     */
-    private BigDecimal beforeFreeze;
-    /**
-     * 余额的变更值(入正出负)
-     */
-    private BigDecimal changeBalance;
-    /**
-     * 冻结额度的变更值(入正出负)
-     */
-    private BigDecimal changeFreeze;
-
+    private LogType type;
     /**
      * 备注
      */
@@ -50,7 +31,7 @@ public class Log {
     /**
      * 操作类型
      */
-    public enum AccountLogType {
+    public enum LogType {
         /**
          * OP 充值
          */
@@ -58,6 +39,6 @@ public class Log {
         /**
          * 充值
          */
-        RECHARGE
+        RECHARGE,
     }
 }

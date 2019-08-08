@@ -7,6 +7,7 @@ import org.cat73.bukkitboot.annotation.core.Bean;
 import org.cat73.bukkitboot.annotation.core.Inject;
 import org.xjcraft.plot.XJPlot;
 import org.xjcraft.plot.common.exception.RollbackException;
+import org.xjcraft.plot.log.service.LogService;
 import org.xjcraft.plot.plot.entity.Plot;
 import org.xjcraft.plot.plot.mapper.PlotMapper;
 import org.xjcraft.plot.util.ExpireAction;
@@ -17,6 +18,8 @@ import java.time.LocalDateTime;
  */
 @Bean
 public class PlotCommand {
+    @Inject
+    private LogService logService;
     @Inject
     private XJPlot plugin;
 
@@ -187,6 +190,7 @@ public class PlotCommand {
     }
 
     // TODO 租赁方式调整
+    //  不能调整已出租地块的租赁方式，但可调整续租租金
     // TODO 地块查看
     // TODO 查看周围地块
 }

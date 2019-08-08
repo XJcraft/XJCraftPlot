@@ -23,8 +23,11 @@ public class BalanceService {
     public Balance getByPlayer(SqlSession session, String playerName) {
         var mapper = session.getMapper(BalanceMapper.class);
 
+        // 玩家名应该是全小写的
+        playerName = playerName.toLowerCase();
+
         // 查询余额
-        var balance = mapper.getByPlayer(playerName.toLowerCase());
+        var balance = mapper.getByPlayer(playerName);
         // 如果没查到则初始化一个
         if (balance == null) {
             balance = new Balance()

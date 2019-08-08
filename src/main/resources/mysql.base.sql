@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS `xjplot_balance_log` (
 -- -----------------------------------
 -- 操作日志表
 -- -----------------------------------
-CREATE TABLE IF NOT EXISTS `xjplot_log`  (
+CREATE TABLE IF NOT EXISTS `xjplot_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_name` varchar(255) NOT NULL COMMENT '玩家名',
   `addtime` datetime(3) NOT NULL COMMENT '创建时间',
@@ -59,4 +59,3 @@ CREATE TABLE IF NOT EXISTS `xjplot_log`  (
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_player_name_type`(`player_name`, `type`) USING BTREE
 ) ENGINE = InnoDB COMMENT = '操作日志';
-BalanceLogMapper

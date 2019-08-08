@@ -58,6 +58,6 @@ public class BalanceLog {
         /**
          * 充值
          */
-        RECHARGE
+        RECHARGE,
     }
 }

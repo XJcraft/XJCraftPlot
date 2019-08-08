@@ -12,6 +12,8 @@ import org.xjcraft.plot.XJPlot;
 import org.xjcraft.plot.balance.entity.BalanceLog;
 import org.xjcraft.plot.balance.service.BalanceService;
 import org.xjcraft.plot.balance.util.Bonds;
+import org.xjcraft.plot.log.entity.Log;
+import org.xjcraft.plot.log.service.LogService;
 import org.xjcraft.plot.util.ExpireAction;
 import java.math.BigDecimal;
 
@@ -22,6 +24,8 @@ import java.math.BigDecimal;
 public class BalanceCommand {
     @Inject
     private BalanceService service;
+    @Inject
+    private LogService logService;
     @Inject
     private XJPlot plugin;
 
@@ -48,13 +52,14 @@ public class BalanceCommand {
 
         // 充值
         var balance = this.plugin.tranr(session -> {
+            // 充值
             this.service.log(session, playerName, BalanceLog.AccountLogType.OP_RECHARGE, money, BigDecimal.ZERO, reason);
+            // 记录日志
+            this.logService.log(session, player.getName(), Log.LogType.OP_RECHARGE, String.format("为 %s 充值 %s 元，充值原因: %s", playerName, money, reason));
             return this.service.getByPlayer(session, playerName);
         });
 
-        player.sendMessage(String.format("%s为玩家 %s 充值 %s 元成功，充值后的余额为 %s", ChatColor.GREEN, playerName, money, balance.getBalance()));
-
-        // TODO 记录日志
+        player.sendMessage(String.format("%s为 %s 充值 %s 元成功，充值后的余额为 %s", ChatColor.GREEN, playerName, money, balance.getBalance()));
     }
 
     /**
@@ -80,7 +85,7 @@ public class BalanceCommand {
         var balance = this.plugin.tranr(session -> this.service.getByPlayer(session, targetPlayerName));
 
         // 提示玩家
-        player.sendMessage(String.format("%s为玩家 %s 的余额为 %s 元，其中，已冻结的额度为 %s 元", ChatColor.GREEN, targetPlayerName, balance.getBalance(), balance.getFreeze()));
+        player.sendMessage(String.format("%s玩家 %s 的余额为 %s 元", ChatColor.GREEN, targetPlayerName, balance.getBalance()));
     }
 
     /**
@@ -123,14 +128,15 @@ public class BalanceCommand {
                     // 将充值的额度存入数据库中
                     var finalMoney = BigDecimal.valueOf(rechargeMoney);
                     var newBalance = this.plugin.tranr(session -> {
+                        // 充值
                         this.service.log(session, player.getName(), BalanceLog.AccountLogType.RECHARGE, finalMoney, BigDecimal.ZERO, null);
+                        // 记录日志
+                        this.logService.log(session, player.getName(), Log.LogType.RECHARGE, String.format("自行充值 %s 元", finalMoney));
                         return this.service.getByPlayer(session, player.getName());
                     }).getBalance();
 
-                    // TODO 记录日志
-
                     // 提示玩家充值结果
-                    player.sendMessage(String.format("%s充值 %s元成功，充值后余额 %s元", ChatColor.GREEN, finalMoney, newBalance));
+                    player.sendMessage(String.format("%s充值 %s 元成功，充值后余额 %s 元", ChatColor.GREEN, finalMoney, newBalance));
                 })
                 .successAction(() -> {
                     // 提示玩家确认
