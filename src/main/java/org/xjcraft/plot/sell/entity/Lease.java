@@ -19,11 +19,11 @@ public class Lease {
      */
     private String playerName;
     /**
-     * 租赁开始时间
+     * 购买时间
      */
     private LocalDateTime addtime;
     /**
-     * 是否自动退租（到期后取消租赁）
+     * 是否自动退租(对于租赁, 到期后取消租赁)
      */
     private Boolean autoWithdrawal;
     /**

@@ -69,6 +69,9 @@ public class Plot {
          */
         FREE("福利(免费)");
 
+        /**
+         * 显示名称 - 对玩家友好的名称
+         */
         @Getter
         private final String displayName;
 
