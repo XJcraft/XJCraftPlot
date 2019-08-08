@@ -1,9 +1,20 @@
 package org.xjcraft.plot.util;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+import org.apache.ibatis.mapping.Environment;
 import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.apache.ibatis.session.SqlSessionFactoryBuilder;
+import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
+import org.bukkit.configuration.Configuration;
 import org.cat73.bukkitboot.util.Lang;
+import org.cat73.bukkitboot.util.Strings;
+import org.cat73.bukkitboot.util.reflect.Scans;
 import org.xjcraft.plot.XJPlot;
 import org.xjcraft.plot.common.exception.RollbackException;
+import java.io.IOException;
+import java.sql.SQLException;
 import java.util.Objects;
 import java.util.function.Supplier;
 
@@ -17,16 +28,82 @@ public class DB {
     }
 
     /**
+     * 数据库连接的 SqlSession 工厂
+     */
+    private static SqlSessionFactory sqlSessionFactory;
+    /**
      * SqlSession 的 ThreadLocal
      */
     private static ThreadLocal<SqlSession> sqlSessionThreadLocal = new ThreadLocal<>();
-    private static XJPlot pluginInstance;
 
-    public static synchronized void setPluginInstance(XJPlot pluginInstance) {
-        if (DB.pluginInstance != null) {
-            throw new IllegalStateException("pluginInstance 只允许设置一次");
+    /**
+     * 初始化数据库连接
+     */
+    public static synchronized void initDatabase(Configuration config) {
+        if (DB.sqlSessionFactory != null) {
+            throw new IllegalStateException("initDatabase 只允许调用一次");
         }
-        DB.pluginInstance = pluginInstance;
+
+        // 构造数据源
+        var hikariConfig = new HikariConfig();
+        hikariConfig.setDriverClassName(config.getString("db.driver"));
+        hikariConfig.setJdbcUrl(config.getString("db.url"));
+        hikariConfig.setUsername(config.getString("db.username"));
+        hikariConfig.setPassword(config.getString("db.password"));
+        var dataSource = new HikariDataSource(hikariConfig);
+
+        // 构造各类配置
+        var transactionFactory = new JdbcTransactionFactory();
+        var environment = new Environment("development", transactionFactory, dataSource);
+        var configuration = new org.apache.ibatis.session.Configuration(environment);
+        // 注册 Mapper
+        try {
+            for (var clazz : Scans.scanClass(XJPlot.class)) {
+                if (clazz.isInterface() && clazz.getSimpleName().endsWith("Mapper") && clazz.getPackage().getName().contains("mapper")) {
+                    configuration.addMapper(clazz);
+                }
+            }
+        } catch (IOException e) {
+            throw Lang.impossible();
+        }
+
+        // 获得 SqlSessionFactory
+        DB.sqlSessionFactory = new SqlSessionFactoryBuilder().build(configuration);
+
+        // 自动创建表结构
+        DB.createTables();
+    }
+
+    /**
+     * 初始化表结构(执行 mysql.base.sql)
+     */
+    private static void createTables() {
+        String sqls;
+        try {
+            sqls = new String(Streams.readAllAsBytes(DB.class.getResourceAsStream("/mysql.base.sql")));
+        } catch (IOException e) {
+            throw Lang.impossible();
+        }
+
+        try (var sqlSession = DB.getSqlSession()) {
+            try (var statement = sqlSession.getConnection().createStatement()) {
+                for (var sql : sqls.split(";")) {
+                    if (Strings.notBlank(sql)) {
+                        statement.executeQuery(sql);
+                    }
+                }
+            } catch (SQLException e) {
+                throw Lang.wrapThrow(e);
+            }
+        }
+    }
+
+    /**
+     * 获取一个 SqlSession，注意一定记得关闭，不然会造成资源泄漏
+     * @return 获取到的 SqlSession
+     */
+    private static SqlSession getSqlSession0() {
+        return DB.sqlSessionFactory.openSession();
     }
 
     /**
@@ -40,6 +117,7 @@ public class DB {
 
     /**
      * 获取当前事务的 SqlSession，若未在事务中，则会抛出 NullPointerException
+     * <p>用完后无需关闭</p>
      * @return 当前事务的 SqlSession
      */
     public static SqlSession getSqlSession() {
@@ -62,7 +140,7 @@ public class DB {
     /**
      * 在事务包装中执行一段代码
      * <p>支持嵌套执行，嵌套时只会存在一个 SqlSession，嵌套时不会提交，只有最外层的事务才会提交</p>
-     * @param code 事务代码，无需在代码中关闭 SqlSession
+     * @param code 事务代码
      * @param <T> 返回值的类型
      * @return 事务代码的返回值
      */
@@ -72,7 +150,7 @@ public class DB {
             return code.get();
         } else {
             // 自身未处在事务里
-            var session = DB.pluginInstance.getSqlSession();
+            var session = DB.getSqlSession0();
             try {
                 DB.sqlSessionThreadLocal.set(session);
                 var result = code.get();
@@ -96,7 +174,7 @@ public class DB {
     /**
      * 在事务中执行一段代码
      * <p>支持嵌套执行，嵌套时只会存在一个 SqlSession，嵌套时不会提交，只有最外层的事务才会提交</p>
-     * @param code 事务代码，无需在代码中关闭 SqlSession
+     * @param code 事务代码
      */
     public static void tran(Runnable code) {
         DB.tranr(() -> {
