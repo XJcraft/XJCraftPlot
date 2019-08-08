@@ -54,5 +54,9 @@ public class Log {
          * 移除地块
          */
         REMOVE_PLOT,
+        /**
+         * 调整地块出租方式
+         */
+        PLOT_CHANGE_SELL_TYPE,
     }
 }

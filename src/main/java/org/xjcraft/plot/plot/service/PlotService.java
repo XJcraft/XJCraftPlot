@@ -72,8 +72,8 @@ public class PlotService {
                     .setX2(xMax)
                     .setZ2(zMax)
                     .setAddtime(LocalDateTime.now())
-                    .setLeaseType(Plot.LeaseType.UNDEFINED)
-                    .setLeaseParams("");
+                    .setSellType(Plot.SellType.UNDEFINED)
+                    .setSellPrice(0);
 
             // 将地块保存到数据库中
             plotMapper.save(plot);
@@ -146,7 +146,7 @@ public class PlotService {
         return DB.tranr(() -> {
             var plotMapper = DB.getMapper(PlotMapper.class);
 
-            // TODO 检查地块必须未被出租
+            // TODO 检查地块必须未被出售
 
             // 查出原地块
             var plot = plotMapper.getById(plotNo);
@@ -159,6 +159,41 @@ public class PlotService {
 
             // 返回结果
             return Result.success(plot);
+        });
+    }
+
+    /**
+     * 调整一个地块的销售方式
+     * @param plotNo 地块编号
+     * @param sellType 新的出售方式
+     * @param sellPrice 新的出售方式 - 价格
+     * @param operator 操作人的名字
+     * @return 操作结果
+     */
+    public Result<?> changeSellType(Integer plotNo, Plot.SellType sellType, int sellPrice, String operator) {
+        return DB.tranr(() -> {
+            var plotMapper = DB.getMapper(PlotMapper.class);
+
+            // 查出原地块
+            var plot = plotMapper.getById(plotNo);
+
+            // TODO 检查地块必须未被出售
+
+            // 移除旧地块
+            plotMapper.removeById(plotNo);
+
+            // 编辑地块实体
+            plot.setSellType(sellType)
+                    .setSellPrice(sellPrice);
+
+            // 将地块插入到数据库中
+            plotMapper.save(plot);
+
+            // 记录日志
+            this.logService.log(operator, Log.LogType.REMOVE_PLOT, String.format("地块编号：%d, 新的出租方式和参数：(%s, %d)", plotNo, sellType.getDisplayName(), sellPrice));
+
+            // 返回结果
+            return Result.success();
         });
     }
 }

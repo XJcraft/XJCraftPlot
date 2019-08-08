@@ -1,6 +1,7 @@
 package org.xjcraft.plot.plot.entity;
 
 import lombok.Data;
+import lombok.Getter;
 import lombok.experimental.Accessors;
 import java.time.LocalDateTime;
 
@@ -39,33 +40,40 @@ public class Plot {
      */
     private LocalDateTime addtime;
     /**
-     * 租赁方式
+     * 出售方式
      */
-    private LeaseType leaseType;
+    private SellType sellType;
     /**
-     * 租赁方式 - 参数
+     * 出售方式 - 价格
      */
-    private String leaseParams;
+    private Integer sellPrice;
 
     /**
-     * 租赁方式
+     * 出售方式
      */
-    public enum LeaseType {
+    public enum SellType {
         /**
-         * 未定义 (不允许出租)
+         * 未定义 (不允许出售)
          */
-        UNDEFINED,
+        UNDEFINED("暂不出售"),
         /**
          * 租赁
          */
-        LEASE,
+        LEASE("租赁"),
         /**
          * 一口价
          */
-        PERMANENT,
+        PERMANENT("一口价"),
         /**
          * 福利地块 (免费)
          */
-        FREE
+        FREE("福利(免费)");
+
+        @Getter
+        private final String displayName;
+
+        SellType(String displayName) {
+            this.displayName = displayName;
+        }
     }
 }

@@ -10,6 +10,7 @@ import org.xjcraft.plot.log.service.LogService;
 import org.xjcraft.plot.plot.entity.Plot;
 import org.xjcraft.plot.plot.service.PlotService;
 import org.xjcraft.plot.util.ExpireAction;
+import java.util.Optional;
 
 /**
  * 地块相关的命令
@@ -90,14 +91,14 @@ public class PlotCommand {
 
     /**
      * 移除一个已有的地块
-     * <p>这个地块必须未被出租</p>
+     * <p>这个地块必须未被出售</p>
      * @param player 命令的执行者
      * @param plotNo 地块编号，可选，如未提供，则会使用当前所在的地块
      */
     @Command(
             permission = "xjplot.admin",
             usage = "[plotNo]",
-            desc = "移除一个已有的地块，这个地块必须未被出租",
+            desc = "移除一个已有的地块，这个地块必须未被出售",
             aliases = "pr",
             target = Command.Target.PLAYER
     )
@@ -140,8 +141,61 @@ public class PlotCommand {
                 .start();
     }
 
-    // TODO 租赁方式调整
-    //  不能调整已出租地块的租赁方式，但可调整续租租金
+    /**
+     * 设置一个地块的出售方式
+     * <p>这个地块必须未被出售</p>
+     * @param player 命令的执行者
+     * @param plotNo 地块编号，可选，如未提供，则会使用当前所在的地块
+     * @param typeStr 出售方式
+     * @param price 出售方式 - 价格
+     * @see Plot.SellType
+     */
+    @Command(
+            permission = "xjplot.admin",
+            usage = "[plotNo] <type> [param]",
+            desc = "修改一个地块的出售方式，这个地块必须未被出售",
+            help = {
+                    "目前 type 允许为:",
+                    "LEASE(一口价)，价格为购买价格",
+                    "FREE(福利, 免费)，不使用价格参数"
+            },
+            aliases = "pclt",
+            target = Command.Target.PLAYER
+    )
+    public void plotChangeSellType(Player player, @Inject(required = false) Integer plotNo, String typeStr, @Inject(required = false) Integer price) {
+        // 查询地块信息
+        Plot plot;
+        if (plotNo != null) {
+            plot = this.plotService.getById(plotNo);
+        } else {
+            var location = player.getLocation();
+            var worldName = player.getWorld().getName();
+            plot = this.plotService.getByPos(worldName, location.getBlockX(), location.getBlockZ());
+        }
+        if (plot == null) {
+            if (plotNo != null) {
+                player.sendMessage(ChatColor.RED + "地块编号不存在");
+            } else {
+                player.sendMessage(ChatColor.RED + "您需要站在一个地块上或输入一个地块编号来修改地块的出租方式");
+            }
+
+            return;
+        }
+
+        // 新的出租方式
+        var leaseType = Plot.SellType.valueOf(typeStr.toUpperCase());
+        var sellPrice = Optional.ofNullable(price).orElse(0);
+
+        // 修改出租方式
+        var result = this.plotService.changeSellType(plotNo, leaseType, sellPrice, player.getName());
+        if (result.isSuccess()) {
+            player.sendMessage(String.format("%s修改成功，地块编号：%d, 新的出租方式和价格：(%s, %d)", ChatColor.GREEN, plotNo, leaseType.getDisplayName(), sellPrice));
+        } else {
+            player.sendMessage(ChatColor.RED + result.getMessage());
+        }
+    }
+
+    // TODO 调整续租价格(对于已出租的地块)
     // TODO 地块查看
     // TODO 查看周围地块
 }

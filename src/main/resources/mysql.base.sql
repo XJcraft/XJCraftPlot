@@ -14,8 +14,8 @@ CREATE TABLE IF NOT EXISTS `xjplot_plot` (
   `x2` int(11) NOT NULL COMMENT 'x 坐标中较大的数字',
   `z2` int(11) NOT NULL COMMENT 'z 坐标中较大的数字',
   `addtime` datetime(3) NOT NULL COMMENT '创建时间',
-  `lease_type` varchar(255) NOT NULL COMMENT '租赁方式',
-  `lease_params` varchar(255) NOT NULL COMMENT '租赁方式_参数(如租金)',
+  `sell_type` varchar(255) NOT NULL COMMENT '租赁方式',
+  `sell_price` int(11) NOT NULL COMMENT '租赁方式 - 价格',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB COMMENT = '地块';
 
@@ -59,3 +59,16 @@ CREATE TABLE IF NOT EXISTS `xjplot_log` (
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_player_name_type`(`player_name`, `type`) USING BTREE
 ) ENGINE = InnoDB COMMENT = '操作日志';
+
+-- -----------------------------------
+-- 地块出售表
+-- -----------------------------------
+CREATE TABLE IF NOT EXISTS `xjplot_sell` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '地块编号',
+  `player_name` varchar(255) NOT NULL COMMENT '当前租下的玩家名',
+  `addtime` datetime(3) NOT NULL COMMENT '租赁开始时间',
+  `auto_withdrawal` tinyint(1) NOT NULL COMMENT '是否自动退租（到期后取消租赁）',
+  `cb_pos` varchar(255) NOT NULL COMMENT '如果 cb 在这块地内，则格式为 x,y,z，否则留空',
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_player_name`(`player_name`) USING BTREE
+) ENGINE = InnoDB COMMENT = '地块出售';

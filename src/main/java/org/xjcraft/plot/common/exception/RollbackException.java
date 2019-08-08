@@ -12,7 +12,7 @@ import lombok.experimental.Accessors;
 @EqualsAndHashCode(callSuper = true)
 public class RollbackException extends RuntimeException {
     /**
-     * 事务的返回值
+     * 事务的返回值，注意数据类型必须和声明的返回值类型一直，不然会抛出 {@link ClassCastException}
      */
     private Object data;
 }
